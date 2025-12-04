@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type CortexItem = {
   id: string;
@@ -12,16 +13,19 @@ export type CortexItem = {
   keywords: string[];
   pitch: string | null;
   writer: string | null;
+  user_id: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export type CortexItemInsert = Omit<CortexItem, 'id' | 'created_at' | 'updated_at'>;
+export type CortexItemInsert = Omit<CortexItem, 'id' | 'created_at' | 'updated_at' | 'user_id'>;
 export type CortexItemUpdate = Partial<CortexItemInsert>;
 
 export const useCortexItems = () => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['cortex-items'],
+    queryKey: ['cortex-items', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('cortex_items')
@@ -35,17 +39,21 @@ export const useCortexItems = () => {
 
       return data as CortexItem[];
     },
+    enabled: !!user,
   });
 };
 
 export const useCreateCortexItem = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (item: CortexItemInsert) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
       const { data, error } = await supabase
         .from('cortex_items')
-        .insert(item)
+        .insert({ ...item, user_id: user.id })
         .select()
         .single();
 

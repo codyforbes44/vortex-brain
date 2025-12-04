@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatedTransition } from '@/components/AnimatedTransition';
 import { useAnimateIn } from '@/lib/animations';
 import CortexTable from '@/components/manage/CortexTable';
@@ -8,9 +8,10 @@ import ViewSwitcher from '@/components/manage/ViewSwitcher';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Check, Edit2, X } from 'lucide-react';
+import { Check, Edit2, X, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Toaster } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ManagePage = () => {
   const showContent = useAnimateIn(false, 300);
@@ -21,6 +22,16 @@ const ManagePage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('private');
   const [selectedItem, setSelectedItem] = useState<string | null>('overview');
+  
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleEditClick = () => {
     setTempTitle(libraryTitle);
@@ -38,11 +49,6 @@ const ManagePage = () => {
     setIsEditing(false);
   };
 
-  const handleDialogOpen = () => {
-    setTempTitle(libraryTitle);
-    setDialogOpen(true);
-  };
-
   const handleDialogSave = () => {
     if (tempTitle.trim()) {
       setLibraryTitle(tempTitle);
@@ -55,7 +61,6 @@ const ManagePage = () => {
     setSelectedItem(itemId);
   };
 
-  // Handle keyboard events for inline editing
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSaveClick();
@@ -63,6 +68,14 @@ const ManagePage = () => {
       handleCancelClick();
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-full mx-auto h-screen pt-24 pb-6">
@@ -118,7 +131,6 @@ const ManagePage = () => {
         </div>
       </AnimatedTransition>
 
-      {/* Alternative: Dialog for editing title */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

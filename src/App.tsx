@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import Import from "./pages/Import";
 import SearchPage from "./pages/SearchPage";
 import Settings from "./pages/Settings";
 import ManagePage from "./pages/ManagePage";
+import AuthPage from "./pages/AuthPage";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
@@ -43,6 +43,14 @@ const AppRoutes = () => {
         element={
           <PageTransition>
             <Index />
+          </PageTransition>
+        } 
+      />
+      <Route 
+        path="/auth" 
+        element={
+          <PageTransition>
+            <AuthPage />
           </PageTransition>
         } 
       />

@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatedTransition } from '@/components/AnimatedTransition';
 import { useAnimateIn } from '@/lib/animations';
 import ProjectRoadmap from '@/components/ProjectRoadmap';
@@ -7,59 +7,72 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { UserProfile } from '@/lib/types';
-import { Mail, Save, X, Plus, ExternalLink } from 'lucide-react';
-
-const initialProfile: UserProfile = {
-  name: 'Alex Johnson',
-  email: 'alex@example.com',
-  description: 'AI researcher and knowledge management enthusiast. Building a digital second brain to enhance creativity and productivity.',
-  links: [
-    { title: 'Personal Website', url: 'https://example.com' },
-    { title: 'GitHub', url: 'https://github.com' },
-    { title: 'Twitter', url: 'https://twitter.com' },
-  ],
-};
+import { Mail, Save, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { toast } from 'sonner';
 
 const Profile = () => {
   const showContent = useAnimateIn(false, 300);
-  const [profile, setProfile] = useState<UserProfile>(initialProfile);
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const updateProfile = useUpdateProfile();
+  const navigate = useNavigate();
+  
   const [isEditing, setIsEditing] = useState(false);
-  const [tempProfile, setTempProfile] = useState<UserProfile>(initialProfile);
-  const [tempLink, setTempLink] = useState({ title: '', url: '' });
+  const [formData, setFormData] = useState({
+    full_name: '',
+    avatar_url: '',
+  });
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+
+  // Initialize form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        avatar_url: profile.avatar_url || '',
+      });
+    }
+  }, [profile]);
   
   const handleEditProfile = () => {
-    setTempProfile({...profile});
     setIsEditing(true);
   };
   
-  const handleSaveProfile = () => {
-    setProfile({...tempProfile});
-    setIsEditing(false);
-  };
-  
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
-  
-  const handleAddLink = () => {
-    if (tempLink.title && tempLink.url) {
-      setTempProfile({
-        ...tempProfile,
-        links: [...(tempProfile.links || []), tempLink]
-      });
-      setTempLink({ title: '', url: '' });
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile.mutateAsync(formData);
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      toast.error('Failed to update profile');
     }
   };
   
-  const handleRemoveLink = (index: number) => {
-    const newLinks = [...(tempProfile.links || [])];
-    newLinks.splice(index, 1);
-    setTempProfile({
-      ...tempProfile,
-      links: newLinks
-    });
+  const handleCancelEdit = () => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        avatar_url: profile.avatar_url || '',
+      });
+    }
+    setIsEditing(false);
   };
+
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-7xl mx-auto px-4 pt-24 pb-16">
@@ -68,38 +81,29 @@ const Profile = () => {
           {!isEditing ? (
             <Card className="w-full mb-8">
               <CardHeader className="flex flex-row items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl font-light">{profile.name.charAt(0)}</span>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-light">
+                      {(profile?.full_name || user?.email || '?').charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 
                 <div>
-                  <CardTitle>{profile.name}</CardTitle>
+                  <CardTitle>{profile?.full_name || 'Your Name'}</CardTitle>
                   <CardDescription className="flex items-center mt-1">
                     <Mail className="h-4 w-4 mr-1" />
-                    {profile.email}
+                    {profile?.email || user?.email}
                   </CardDescription>
-                </div>
-                
-                <div className="ml-auto flex gap-2">
-                  {profile.links?.map((link, index) => (
-                    <a 
-                      key={index} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-                    >
-                      {link.title}
-                      <ExternalLink size={14} />
-                    </a>
-                  ))}
                 </div>
                 
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={handleEditProfile}
-                  className="ml-2"
+                  className="ml-auto"
                 >
                   Edit Profile
                 </Button>
@@ -113,85 +117,33 @@ const Profile = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">Full Name</Label>
                     <Input 
                       id="name" 
-                      value={tempProfile.name}
-                      onChange={(e) => setTempProfile({...tempProfile, name: e.target.value})}
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      placeholder="Enter your name"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="avatar">Avatar URL</Label>
                     <Input 
-                      id="email" 
-                      type="email"
-                      value={tempProfile.email}
-                      onChange={(e) => setTempProfile({...tempProfile, email: e.target.value})}
+                      id="avatar" 
+                      value={formData.avatar_url}
+                      onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+                      placeholder="https://example.com/avatar.jpg"
                     />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input 
-                    id="description" 
-                    value={tempProfile.description || ''}
-                    onChange={(e) => setTempProfile({...tempProfile, description: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Links</Label>
-                  <div className="rounded-md border">
-                    <div className="space-y-2 p-4">
-                      {tempProfile.links?.map((link, index) => (
-                        <div key={index} className="flex items-center justify-between gap-2">
-                          <div className="flex-1 truncate">
-                            <span className="font-medium">{link.title}</span>: {link.url}
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleRemoveLink(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="linkTitle">Link Title</Label>
-                    <Input 
-                      id="linkTitle" 
-                      value={tempLink.title}
-                      onChange={(e) => setTempLink({...tempLink, title: e.target.value})}
-                      placeholder="GitHub"
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="linkUrl">URL</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        id="linkUrl" 
-                        value={tempLink.url}
-                        onChange={(e) => setTempLink({...tempLink, url: e.target.value})}
-                        placeholder="https://github.com/username"
-                      />
-                      <Button onClick={handleAddLink}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-                <Button onClick={handleSaveProfile}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
+                  {updateProfile.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Changes
                 </Button>
               </CardFooter>
