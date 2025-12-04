@@ -141,15 +141,13 @@ export const Navbar = () => {
     { to: '/how', icon: <Code size={18} />, label: 'How', id: 'how' },
   ];
   
-  const authNavItems = [
+  const navItems = [
     { to: '/manage', icon: <Table size={20} />, label: 'Manage', id: 'manage' },
     { to: '/search', icon: <Search size={20} />, label: 'Search', id: 'search' },
     { to: '/import', icon: <Upload size={20} />, label: 'Import', id: 'import' },
     { to: '/profile', icon: <User size={20} />, label: 'Profile', id: 'profile' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings', id: 'settings' },
   ];
-
-  const navItems = isAuthenticated ? authNavItems : [];
 
   return (
     <>

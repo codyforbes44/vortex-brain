@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, Move } from 'lucide-react';
+import { Search, Filter, Plus, Move, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import TableView from './views/TableView';
 import GridView from './views/GridView';
 import ListView from './views/ListView';
 import KanbanView from './views/KanbanView';
-import { cortexItems } from './cortex-data';
+import { useCortexItems, useCreateCortexItem, useDeleteCortexItem, CortexItem } from '@/hooks/useCortexItems';
 import { 
   Dialog, 
   DialogContent, 
@@ -21,7 +21,10 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CortexTableProps {
   viewType?: 'table' | 'grid' | 'list' | 'kanban';
@@ -33,7 +36,21 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [targetCortex, setTargetCortex] = useState<string>('');
+  const [newItem, setNewItem] = useState({
+    title: '',
+    url: '',
+    type: 'Article',
+    source: '',
+    keywords: '',
+    pitch: '',
+    writer: ''
+  });
+
+  const { data: cortexItems = [], isLoading, error } = useCortexItems();
+  const createMutation = useCreateCortexItem();
+  const deleteMutation = useDeleteCortexItem();
   
   const getActiveCortexName = () => {
     const categories = [
@@ -83,7 +100,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
         ? cortexItems.filter(item => 
             item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            item.writer.toLowerCase().includes(searchQuery.toLowerCase())
+            (item.writer?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
           )
         : cortexItems;
     }
@@ -103,7 +120,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
       ? cortexFiltered.filter(item => 
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          item.writer.toLowerCase().includes(searchQuery.toLowerCase())
+          (item.writer?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
         )
       : cortexFiltered;
   };
@@ -129,6 +146,34 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
     setTargetCortex('');
   };
 
+  const handleDeleteSelected = async () => {
+    for (const id of selectedItems) {
+      await deleteMutation.mutateAsync(id);
+    }
+    setSelectedItems([]);
+  };
+
+  const handleCreateItem = async () => {
+    if (!newItem.title || !newItem.url) {
+      toast.error('Title and URL are required');
+      return;
+    }
+
+    await createMutation.mutateAsync({
+      title: newItem.title,
+      url: newItem.url,
+      type: newItem.type,
+      source: newItem.source,
+      keywords: newItem.keywords.split(',').map(k => k.trim()).filter(Boolean),
+      pitch: newItem.pitch || null,
+      writer: newItem.writer || null,
+      created_date: new Date().toISOString(),
+    });
+
+    setNewItem({ title: '', url: '', type: 'Article', source: '', keywords: '', pitch: '', writer: '' });
+    setCreateDialogOpen(false);
+  };
+
   const cortexOptions = [
     { id: 'shared-1', name: 'Second Brain' },
     { id: 'shared-2', name: 'OSS' },
@@ -140,6 +185,14 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
     { id: 'private-2', name: 'Space' },
     { id: 'private-3', name: 'Cloud Computing' },
   ];
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full text-destructive">
+        <p>Error loading items: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -155,16 +208,22 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
         </div>
         <div className="flex gap-2">
           {selectedItems.length > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setMoveDialogOpen(true)}>
-              <Move size={16} className="mr-2" />
-              Move ({selectedItems.length})
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => setMoveDialogOpen(true)}>
+                <Move size={16} className="mr-2" />
+                Move ({selectedItems.length})
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                <Trash2 size={16} className="mr-2" />
+                Delete ({selectedItems.length})
+              </Button>
+            </>
           )}
           <Button variant="outline" size="sm">
             <Filter size={16} className="mr-2" />
             Filter
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
             <Plus size={16} className="mr-2" />
             New Cortex
           </Button>
@@ -172,7 +231,13 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
       </div>
       
       <div className="flex-1 overflow-auto">
-        {filteredItems.length === 0 ? (
+        {isLoading ? (
+          <div className="p-4 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <p>No cortex items found for this section.</p>
           </div>
@@ -204,6 +269,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
         )}
       </div>
 
+      {/* Move Dialog */}
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -229,6 +295,96 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
             </Button>
             <Button onClick={handleMoveItems} disabled={!targetCortex}>
               Move Items
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create New Cortex Item</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={newItem.title}
+                onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                placeholder="Enter title..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="url">URL *</Label>
+              <Input
+                id="url"
+                value={newItem.url}
+                onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
+                placeholder="/cortex/..."
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="type">Type</Label>
+                <Select value={newItem.type} onValueChange={(v) => setNewItem({ ...newItem, type: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Article">Article</SelectItem>
+                    <SelectItem value="Guide">Guide</SelectItem>
+                    <SelectItem value="Collection">Collection</SelectItem>
+                    <SelectItem value="Template">Template</SelectItem>
+                    <SelectItem value="Code">Code</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="source">Source</Label>
+                <Input
+                  id="source"
+                  value={newItem.source}
+                  onChange={(e) => setNewItem({ ...newItem, source: e.target.value })}
+                  placeholder="Source..."
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="keywords">Keywords (comma-separated)</Label>
+              <Input
+                id="keywords"
+                value={newItem.keywords}
+                onChange={(e) => setNewItem({ ...newItem, keywords: e.target.value })}
+                placeholder="AI, Machine Learning, ..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="pitch">Pitch</Label>
+              <Textarea
+                id="pitch"
+                value={newItem.pitch}
+                onChange={(e) => setNewItem({ ...newItem, pitch: e.target.value })}
+                placeholder="Brief description..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="writer">Writer</Label>
+              <Input
+                id="writer"
+                value={newItem.writer}
+                onChange={(e) => setNewItem({ ...newItem, writer: e.target.value })}
+                placeholder="Author name..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateItem} disabled={createMutation.isPending}>
+              {createMutation.isPending ? 'Creating...' : 'Create Item'}
             </Button>
           </DialogFooter>
         </DialogContent>

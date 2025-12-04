@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowUpDown, Check, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,8 +9,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CortexItem, columns } from '../cortex-data';
+import { CortexItem } from '@/hooks/useCortexItems';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+
+const columns = [
+  { id: 'title', name: 'Title', sortable: true },
+  { id: 'url', name: 'URL', sortable: false },
+  { id: 'type', name: 'Type', sortable: true },
+  { id: 'created_date', name: 'Created Date', sortable: true },
+  { id: 'keywords', name: 'Keywords', sortable: false },
+  { id: 'source', name: 'Source', sortable: true },
+  { id: 'pitch', name: 'Pitch', sortable: false },
+  { id: 'writer', name: 'Writer', sortable: true },
+];
 
 interface TableViewProps {
   items: CortexItem[];
@@ -61,7 +72,7 @@ const TableView = ({
                   onClick={() => onSelectItem(item.id)}
                 >
                   {isSelected ? (
-                    <div className="rounded-md bg-primary text-white p-0.5">
+                    <div className="rounded-md bg-primary text-primary-foreground p-0.5">
                       <Check size={16} />
                     </div>
                   ) : (
@@ -80,7 +91,7 @@ const TableView = ({
                   {item.type}
                 </span>
               </TableCell>
-              <TableCell>{item.createdDate}</TableCell>
+              <TableCell>{format(new Date(item.created_date), 'yyyy-MM-dd')}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {item.keywords.map((keyword, idx) => (

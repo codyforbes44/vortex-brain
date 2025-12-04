@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { CortexItem } from '../cortex-data';
+import { CortexItem } from '@/hooks/useCortexItems';
 import { Check, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +33,7 @@ const GridView = ({
               onClick={() => onSelectItem(item.id)}
             >
               {isSelected ? (
-                <div className="rounded-md bg-primary text-white p-0.5">
+                <div className="rounded-md bg-primary text-primary-foreground p-0.5">
                   <Check size={16} />
                 </div>
               ) : (
