@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,9 @@ import { generateId, createNewChat as createNewChatUtil } from '@/utils/chatUtil
 import ChatSidebar from './ChatSidebar';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
-import { cn } from '@/lib/utils';
+import { useAIChat } from '@/hooks/useAIChat';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,17 @@ export const Search: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
   
+  const { messages, isLoading, sendMessage } = useAIChat();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+  
   // Initialize with a sample chat on first render
   useEffect(() => {
     if (chats.length === 0) {
@@ -26,6 +38,37 @@ export const Search: React.FC = () => {
       setActiveChat(newChat);
     }
   }, []);
+
+  // Sync AI messages to active chat
+  useEffect(() => {
+    if (messages.length > 0 && activeChat) {
+      const chatMessages: ChatMessage[] = messages.map(msg => ({
+        id: msg.id,
+        type: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+        timestamp: msg.timestamp
+      }));
+
+      const updatedChats = chats.map(chat => {
+        if (chat.id === activeChat.id) {
+          // Update title from first user message
+          let title = chat.title;
+          const firstUserMsg = chatMessages.find(m => m.type === 'user');
+          if (firstUserMsg && chat.title === 'New Chat') {
+            title = firstUserMsg.content.length > 25 
+              ? `${firstUserMsg.content.substring(0, 22)}...` 
+              : firstUserMsg.content;
+          }
+          return { ...chat, messages: chatMessages, title, updatedAt: new Date() };
+        }
+        return chat;
+      });
+      
+      setChats(updatedChats);
+      const updated = updatedChats.find(c => c.id === activeChat.id);
+      if (updated) setActiveChat(updated);
+    }
+  }, [messages]);
 
   // Create a new chat
   const createNewChat = () => {
@@ -40,12 +83,10 @@ export const Search: React.FC = () => {
     const updatedChats = chats.filter(chat => chat.id !== chatId);
     setChats(updatedChats);
     
-    // If we deleted the active chat, set the first available chat as active
     if (activeChat && activeChat.id === chatId) {
       setActiveChat(updatedChats.length > 0 ? updatedChats[0] : null);
     }
     
-    // If no chats left, create a new one
     if (updatedChats.length === 0) {
       createNewChat();
     }
@@ -73,73 +114,12 @@ export const Search: React.FC = () => {
   };
 
   // Handle message submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim() && activeChat) {
-      // Create user message
-      const userMessage: ChatMessage = {
-        id: generateId(),
-        type: 'user',
-        content: searchQuery,
-        timestamp: new Date()
-      };
-      
-      // Update chat with new message
-      const updatedChats = chats.map(chat => {
-        if (chat.id === activeChat.id) {
-          // If this is the first message, update the chat title
-          let updatedTitle = chat.title;
-          if (chat.messages.length === 0) {
-            updatedTitle = searchQuery.length > 25 
-              ? `${searchQuery.substring(0, 22)}...` 
-              : searchQuery;
-          }
-          
-          return {
-            ...chat,
-            title: updatedTitle,
-            messages: [...chat.messages, userMessage],
-            updatedAt: new Date()
-          };
-        }
-        return chat;
-      });
-      
-      setChats(updatedChats);
+      const query = searchQuery;
       setSearchQuery('');
-      
-      // Find the updated active chat
-      const updatedActiveChat = updatedChats.find(chat => chat.id === activeChat.id);
-      if (updatedActiveChat) {
-        setActiveChat(updatedActiveChat);
-        
-        // Add AI response after a short delay
-        setTimeout(() => {
-          const aiMessage: ChatMessage = {
-            id: generateId(),
-            type: 'assistant',
-            content: `Based on your search for "${userMessage.content}", I found several relevant notes in your second brain. Would you like me to summarize the key insights?`,
-            timestamp: new Date()
-          };
-          
-          const updatedChatsWithAi = updatedChats.map(chat => {
-            if (chat.id === activeChat.id) {
-              return {
-                ...chat,
-                messages: [...chat.messages, aiMessage],
-                updatedAt: new Date()
-              };
-            }
-            return chat;
-          });
-          
-          setChats(updatedChatsWithAi);
-          const updatedActiveChatWithAi = updatedChatsWithAi.find(chat => chat.id === activeChat.id);
-          if (updatedActiveChatWithAi) {
-            setActiveChat(updatedActiveChatWithAi);
-          }
-        }, 800);
-      }
+      await sendMessage(query);
     }
   };
 
@@ -147,6 +127,10 @@ export const Search: React.FC = () => {
   const toggleSidebar = () => {
     setShowSidebar(!showSidebar);
   };
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
 
   return (
     <div className="w-full h-[calc(100vh-120px)] flex">
@@ -180,6 +164,11 @@ export const Search: React.FC = () => {
           <h2 className="font-medium">
             {activeChat?.title || 'Universal Search'}
           </h2>
+          {isLoading && (
+            <span className="ml-2 text-sm text-muted-foreground animate-pulse">
+              Thinking...
+            </span>
+          )}
         </div>
         
         {/* Chat messages area */}
