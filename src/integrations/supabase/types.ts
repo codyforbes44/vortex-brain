@@ -22,6 +22,7 @@ export type Database = {
           keywords: string[] | null
           pitch: string | null
           source: string
+          status: string
           title: string
           type: string
           updated_at: string
@@ -36,6 +37,7 @@ export type Database = {
           keywords?: string[] | null
           pitch?: string | null
           source: string
+          status?: string
           title: string
           type: string
           updated_at?: string
@@ -50,6 +52,7 @@ export type Database = {
           keywords?: string[] | null
           pitch?: string | null
           source?: string
+          status?: string
           title?: string
           type?: string
           updated_at?: string

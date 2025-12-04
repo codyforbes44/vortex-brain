@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
+export type CortexItemStatus = 'to_read' | 'in_progress' | 'completed';
+
 export type CortexItem = {
   id: string;
   title: string;
@@ -16,10 +18,11 @@ export type CortexItem = {
   user_id: string | null;
   created_at: string;
   updated_at: string;
+  status: CortexItemStatus;
 };
 
-export type CortexItemInsert = Omit<CortexItem, 'id' | 'created_at' | 'updated_at' | 'user_id'>;
-export type CortexItemUpdate = Partial<CortexItemInsert>;
+export type CortexItemInsert = Omit<CortexItem, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'status'> & { status?: CortexItemStatus };
+export type CortexItemUpdate = Partial<CortexItemInsert & { status: CortexItemStatus }>;
 
 export const useCortexItems = () => {
   const { user } = useAuth();
