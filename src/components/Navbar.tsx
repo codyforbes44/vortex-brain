@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Brain, LogIn, Search, Upload, User, Settings, LogOut, Moon, Sun, Table, Info, HelpCircle, Code } from 'lucide-react';
+import { Brain, LogIn, Search, Upload, User, Settings, LogOut, Moon, Sun, Table, Info, HelpCircle, Code, DollarSign } from 'lucide-react';
 import { useRippleEffect } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,6 +134,7 @@ export const Navbar = () => {
     { to: '/', icon: <Info size={18} />, label: 'What', id: 'what' },
     { to: '/why', icon: <HelpCircle size={18} />, label: 'Why', id: 'why' },
     { to: '/how', icon: <Code size={18} />, label: 'How', id: 'how' },
+    { to: '/pricing', icon: <DollarSign size={18} />, label: 'Pricing', id: 'pricing' },
   ];
   
   const navItems = [
@@ -153,7 +154,7 @@ export const Navbar = () => {
             to="#"
             icon={<Brain size={20} />}
             label="Vortex"
-            active={['what', 'why', 'how'].includes(active)}
+            active={['what', 'why', 'how', 'pricing'].includes(active)}
             onClick={() => {}}
             hasSubmenu={true}
           >

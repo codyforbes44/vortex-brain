@@ -7,8 +7,10 @@ import { DeploySection } from '@/components/landing/DeploySection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CallToAction } from '@/components/landing/CallToAction';
 import { LoadingScreen } from '@/components/landing/LoadingScreen';
+import { PricingSection } from '@/components/landing/PricingSection';
 import UseCasesSection from '@/components/landing/UseCasesSection';
 import { SEOHead } from '@/components/SEOHead';
+import { Footer } from '@/components/Footer';
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,8 @@ const Index = () => {
   const showDeploy = useAnimateIn(false, 1200);
   const showUseCases = useAnimateIn(false, 1500);
   const showTestimonials = useAnimateIn(false, 1800);
-  const showCallToAction = useAnimateIn(false, 2100);
+  const showPricing = useAnimateIn(false, 2100);
+  const showCallToAction = useAnimateIn(false, 2400);
   
   useEffect(() => {
     // Simulate loading
@@ -62,11 +65,15 @@ const Index = () => {
             {/* Testimonials Section */}
             <TestimonialsSection showTestimonials={showTestimonials} />
             
+            {/* Pricing Section */}
+            <PricingSection showPricing={showPricing} />
+            
             {/* Call to Action */}
             <CallToAction show={showCallToAction} />
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

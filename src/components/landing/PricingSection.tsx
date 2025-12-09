@@ -1,14 +1,60 @@
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Brain, BadgeDollarSign, Building, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatedTransition } from '@/components/AnimatedTransition';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface PricingSectionProps {
   showPricing: boolean;
 }
 
 export const PricingSection = ({ showPricing }: PricingSectionProps) => {
+  const navigate = useNavigate();
+  const { isAuthenticated, session } = useAuth();
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+
+  const handlePlanClick = async (planName: string) => {
+    if (planName === 'Basic') {
+      navigate('/auth');
+      return;
+    }
+
+    if (planName === 'Enterprise') {
+      window.location.href = 'mailto:sales@vortex.app?subject=Enterprise%20Plan%20Inquiry';
+      return;
+    }
+
+    if (planName === 'Pro') {
+      if (!isAuthenticated) {
+        toast.info('Please sign in to upgrade to Pro');
+        navigate('/auth');
+        return;
+      }
+
+      setIsLoading('Pro');
+      try {
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+          body: { priceType: 'pro' },
+        });
+
+        if (error) throw error;
+
+        if (data?.url) {
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        toast.error('Failed to start checkout. Please try again.');
+      } finally {
+        setIsLoading(null);
+      }
+    }
+  };
+
   const pricingPlans = [
     {
       name: "Basic",
@@ -119,8 +165,13 @@ export const PricingSection = ({ showPricing }: PricingSectionProps) => {
                 </ul>
               </CardContent>
               <CardFooter className="pb-6">
-                <Button className={`w-full ${plan.popular ? 'bg-gradient-to-r from-primary to-accent hover:opacity-90' : ''}`} variant={plan.buttonVariant as "default" | "outline"}>
-                  {plan.buttonText}
+                <Button 
+                  className={`w-full ${plan.popular ? 'bg-gradient-to-r from-primary to-accent hover:opacity-90' : ''}`} 
+                  variant={plan.buttonVariant as "default" | "outline"}
+                  onClick={() => handlePlanClick(plan.name)}
+                  disabled={isLoading === plan.name}
+                >
+                  {isLoading === plan.name ? 'Processing...' : plan.buttonText}
                 </Button>
               </CardFooter>
             </Card>

@@ -16,6 +16,9 @@ import SearchPage from "./pages/SearchPage";
 import Settings from "./pages/Settings";
 import ManagePage from "./pages/ManagePage";
 import AuthPage from "./pages/AuthPage";
+import PricingPage from "./pages/PricingPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
@@ -67,6 +70,30 @@ const AppRoutes = () => {
         element={
           <PageTransition>
             <HowPage />
+          </PageTransition>
+        } 
+      />
+      <Route 
+        path="/pricing" 
+        element={
+          <PageTransition>
+            <PricingPage />
+          </PageTransition>
+        } 
+      />
+      <Route 
+        path="/privacy" 
+        element={
+          <PageTransition>
+            <PrivacyPage />
+          </PageTransition>
+        } 
+      />
+      <Route 
+        path="/terms" 
+        element={
+          <PageTransition>
+            <TermsPage />
           </PageTransition>
         } 
       />
