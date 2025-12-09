@@ -1,0 +1,15 @@
+# Robots.txt for Vortex
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Disallow admin/private routes
+Disallow: /settings
+Disallow: /profile
+
+# Sitemap
+# Sitemap: https://yourdomain.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
