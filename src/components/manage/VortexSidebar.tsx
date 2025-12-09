@@ -1,32 +1,31 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Folder, Share, Users, Lock, Plus, Move } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type CortexCategory = {
+type VortexCategory = {
   id: string;
   name: string;
   icon: React.ReactNode;
-  items: CortexItem[];
+  items: VortexItem[];
 };
 
-type CortexItem = {
+type VortexItem = {
   id: string;
   name: string;
 };
 
-interface CortexSidebarProps {
-  onCortexSelect: (categoryId: string, itemId: string | null) => void;
+interface VortexSidebarProps {
+  onVortexSelect: (categoryId: string, itemId: string | null) => void;
   selectedCategoryId: string;
   selectedItemId: string | null;
 }
 
-const CortexSidebar = ({ 
-  onCortexSelect, 
+const VortexSidebar = ({ 
+  onVortexSelect, 
   selectedCategoryId = 'private', 
   selectedItemId = 'overview' 
-}: CortexSidebarProps) => {
-  const categories: CortexCategory[] = [
+}: VortexSidebarProps) => {
+  const categories: VortexCategory[] = [
     {
       id: 'shared',
       name: 'Shared',
@@ -61,11 +60,11 @@ const CortexSidebar = ({
   ];
 
   const handleCategoryClick = (categoryId: string) => {
-    onCortexSelect(categoryId, null);
+    onVortexSelect(categoryId, null);
   };
 
   const handleItemClick = (categoryId: string, itemId: string) => {
-    onCortexSelect(categoryId, itemId);
+    onVortexSelect(categoryId, itemId);
   };
 
   return (
@@ -110,4 +109,4 @@ const CortexSidebar = ({
   );
 };
 
-export default CortexSidebar;
+export default VortexSidebar;

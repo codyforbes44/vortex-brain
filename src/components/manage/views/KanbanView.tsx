@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { CortexItem, CortexItemStatus, useUpdateCortexItem } from '@/hooks/useCortexItems';
+import { VortexItem, VortexItemStatus, useUpdateVortexItem } from '@/hooks/useVortexItems';
 import { cn } from '@/lib/utils';
 
 interface KanbanViewProps {
-  items: CortexItem[];
+  items: VortexItem[];
 }
 
-const COLUMNS: { id: CortexItemStatus; label: string }[] = [
+const COLUMNS: { id: VortexItemStatus; label: string }[] = [
   { id: 'to_read', label: 'To Read' },
   { id: 'in_progress', label: 'In Progress' },
   { id: 'completed', label: 'Completed' },
 ];
 
 const KanbanView = ({ items }: KanbanViewProps) => {
-  const [draggedItem, setDraggedItem] = useState<CortexItem | null>(null);
-  const [dragOverColumn, setDragOverColumn] = useState<CortexItemStatus | null>(null);
-  const updateItem = useUpdateCortexItem();
+  const [draggedItem, setDraggedItem] = useState<VortexItem | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<VortexItemStatus | null>(null);
+  const updateItem = useUpdateVortexItem();
 
-  const handleDragStart = (e: React.DragEvent, item: CortexItem) => {
+  const handleDragStart = (e: React.DragEvent, item: VortexItem) => {
     setDraggedItem(item);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -28,7 +28,7 @@ const KanbanView = ({ items }: KanbanViewProps) => {
     setDragOverColumn(null);
   };
 
-  const handleDragOver = (e: React.DragEvent, columnId: CortexItemStatus) => {
+  const handleDragOver = (e: React.DragEvent, columnId: VortexItemStatus) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOverColumn(columnId);
@@ -38,7 +38,7 @@ const KanbanView = ({ items }: KanbanViewProps) => {
     setDragOverColumn(null);
   };
 
-  const handleDrop = (e: React.DragEvent, columnId: CortexItemStatus) => {
+  const handleDrop = (e: React.DragEvent, columnId: VortexItemStatus) => {
     e.preventDefault();
     if (draggedItem && draggedItem.status !== columnId) {
       updateItem.mutate({
@@ -50,7 +50,7 @@ const KanbanView = ({ items }: KanbanViewProps) => {
     setDragOverColumn(null);
   };
 
-  const getColumnItems = (columnId: CortexItemStatus) => {
+  const getColumnItems = (columnId: VortexItemStatus) => {
     return items.filter((item) => item.status === columnId);
   };
 

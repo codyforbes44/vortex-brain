@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CortexItem } from '@/hooks/useCortexItems';
+import { VortexItem } from '@/hooks/useVortexItems';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -25,7 +25,7 @@ const columns = [
 ];
 
 interface TableViewProps {
-  items: CortexItem[];
+  items: VortexItem[];
   selectedItems?: string[];
   onSelectItem?: (id: string) => void;
 }

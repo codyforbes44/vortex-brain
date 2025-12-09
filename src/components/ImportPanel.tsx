@@ -5,7 +5,7 @@ import { ImportSource } from '@/lib/types';
 import AnimatedTransition from './AnimatedTransition';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCreateCortexItem } from '@/hooks/useCortexItems';
+import { useCreateVortexItem } from '@/hooks/useVortexItems';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,7 +94,7 @@ export const ImportPanel: React.FC = () => {
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const createItem = useCreateCortexItem();
+  const createItem = useCreateVortexItem();
   
   // Text input form state
   const [textForm, setTextForm] = useState({
@@ -138,7 +138,7 @@ export const ImportPanel: React.FC = () => {
       });
       
       setTextForm({ title: '', content: '', type: 'Note', source: 'Manual Input', keywords: '' });
-      toast.success('Item added to your Cortex!');
+      toast.success('Item added to your Vortex!');
     } catch (error) {
       // Error handled by hook
     }
@@ -163,7 +163,7 @@ export const ImportPanel: React.FC = () => {
       });
       
       setUrlForm({ url: '', title: '', type: 'Article' });
-      toast.success('URL added to your Cortex!');
+      toast.success('URL added to your Vortex!');
     } catch (error) {
       // Error handled by hook
     }
@@ -199,7 +199,7 @@ export const ImportPanel: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-medium">Add New Item</h3>
             <p className="text-muted-foreground">
-              Directly input content to save to your Cortex.
+              Directly input content to save to your Vortex.
             </p>
             <div className="space-y-4">
               <div>
@@ -265,7 +265,7 @@ export const ImportPanel: React.FC = () => {
                 {createItem.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : null}
-                Save to Cortex
+                Save to Vortex
               </Button>
             </div>
           </div>
@@ -275,7 +275,7 @@ export const ImportPanel: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-medium">Import from URL</h3>
             <p className="text-muted-foreground">
-              Save a website or article URL to your Cortex.
+              Save a website or article URL to your Vortex.
             </p>
             <div className="space-y-4">
               <div>

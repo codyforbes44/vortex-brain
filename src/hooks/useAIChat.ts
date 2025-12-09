@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useCortexItems } from './useCortexItems';
+import { useVortexItems } from './useVortexItems';
 
 interface Message {
   id: string;
@@ -12,7 +12,7 @@ interface Message {
 export const useAIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { data: cortexItems } = useCortexItems();
+  const { data: vortexItems } = useVortexItems();
 
   const sendMessage = async (content: string) => {
     const userMessage: Message = {
@@ -29,7 +29,7 @@ export const useAIChat = () => {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { 
           message: content,
-          cortexItems: cortexItems?.slice(0, 20) // Send up to 20 items for context
+          vortexItems: vortexItems?.slice(0, 20) // Send up to 20 items for context
         },
       });
 

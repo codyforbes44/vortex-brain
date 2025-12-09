@@ -1,10 +1,10 @@
 import React from 'react';
 import { Check, Square } from 'lucide-react';
-import { CortexItem } from '@/hooks/useCortexItems';
+import { VortexItem } from '@/hooks/useVortexItems';
 import { cn } from '@/lib/utils';
 
 interface ListViewProps {
-  items: CortexItem[];
+  items: VortexItem[];
   selectedItems?: string[];
   onSelectItem?: (id: string) => void;
 }
