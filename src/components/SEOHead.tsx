@@ -5,6 +5,7 @@ interface SEOHeadProps {
   description?: string;
   keywords?: string;
   ogImage?: string;
+  ogImageAlt?: string;
   ogType?: string;
   canonicalUrl?: string;
   noIndex?: boolean;
@@ -24,6 +25,7 @@ export const SEOHead = ({
   description,
   keywords,
   ogImage,
+  ogImageAlt,
   ogType = 'website',
   canonicalUrl,
   noIndex = false,
@@ -66,7 +68,7 @@ export const SEOHead = ({
       <meta property="og:image" content={fullOgImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content="Vortex - Your Personal AI Engine" />
+      <meta property="og:image:alt" content={ogImageAlt || "Vortex - Your Personal AI Engine"} />
       <meta property="og:site_name" content={defaultMeta.siteName} />
       <meta property="og:locale" content="en_US" />
       
@@ -76,7 +78,7 @@ export const SEOHead = ({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={metaDescription} />
       <meta name="twitter:image" content={fullOgImage} />
-      <meta name="twitter:image:alt" content="Vortex - Your Personal AI Engine" />
+      <meta name="twitter:image:alt" content={ogImageAlt || "Vortex - Your Personal AI Engine"} />
       
       {/* Additional SEO */}
       <meta name="application-name" content="Vortex" />

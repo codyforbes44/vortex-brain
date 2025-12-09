@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatedTransition } from '@/components/AnimatedTransition';
 import { useAnimateIn } from '@/lib/animations';
+import { SEOHead } from '@/components/SEOHead';
 import VortexTable from '@/components/manage/VortexTable';
 import VortexSidebar from '@/components/manage/VortexSidebar';
 import ViewSwitcher from '@/components/manage/ViewSwitcher';
@@ -79,6 +80,14 @@ const ManagePage = () => {
 
   return (
     <div className="max-w-full mx-auto h-screen pt-24 pb-6">
+      <SEOHead 
+        title="Manage Your Knowledge"
+        description="Organize your knowledge with Vortex's powerful management dashboard. Use Kanban boards, tables, grids, and lists to structure your second brain."
+        keywords="knowledge management, organize notes, kanban board, personal dashboard"
+        ogImage="/og-manage.png"
+        ogImageAlt="Vortex - Organize Your Knowledge"
+        noIndex={true}
+      />
       <Toaster position="top-right" />
       <AnimatedTransition show={showContent} animation="slide-up">
         <div className="flex h-[calc(100vh-130px)]">

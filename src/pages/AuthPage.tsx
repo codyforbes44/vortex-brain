@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Brain, Mail, Lock, User } from 'lucide-react';
 import { z } from 'zod';
+import { SEOHead } from '@/components/SEOHead';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -101,6 +102,13 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/20">
+      <SEOHead 
+        title="Login & Sign Up"
+        description="Join Vortex and create your personal AI-powered second brain. Sign up for free to organize notes, bookmarks, and ideas in one private knowledge base."
+        keywords="vortex login, vortex signup, second brain account, PKM signup"
+        ogImage="/og-auth.png"
+        ogImageAlt="Join Vortex Today - Create your AI-powered second brain"
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
