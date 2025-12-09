@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useAnimateIn } from '@/lib/animations';
 import { 
@@ -20,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AnimatedTransition from '@/components/AnimatedTransition';
 import { Link } from 'react-router-dom';
+import { SEOHead } from '@/components/SEOHead';
 
 const FeatureCard = ({ 
   icon, 
@@ -153,7 +153,13 @@ const HowPage = () => {
   }, []);
   
   return (
-    <div className="relative overflow-hidden">
+    <>
+      <SEOHead 
+        title="How Vortex Works"
+        description="Learn how Vortex transforms your knowledge management with AI-powered organization, semantic search, and neural network visualization. See the workflow and features."
+        keywords="how vortex works, AI knowledge management, semantic search, neural network visualization, second brain workflow"
+      />
+      <div className="relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent -z-10"></div>
       <div className="absolute top-1/3 right-0 w-[300px] h-[300px] rounded-full bg-primary/5 blur-3xl -z-10"></div>
@@ -306,7 +312,7 @@ const HowPage = () => {
           
           <div className="flex justify-center mt-16">
             <Button size="lg" className="rounded-full" asChild>
-              <Link to="/">
+              <Link to="/auth">
                 Start your journey
               </Link>
             </Button>
@@ -408,9 +414,10 @@ const HowPage = () => {
               </p>
             </div>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { message, cortexItems } = await req.json();
+    const { message, vortexItems } = await req.json();
 
     if (!message) {
       return new Response(
@@ -30,15 +30,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build context from cortex items
+    // Build context from vortex items
     let contextPrompt = '';
-    if (cortexItems && cortexItems.length > 0) {
-      contextPrompt = `\n\nHere are the user's knowledge base items for context:\n${cortexItems.map((item: any) => 
+    if (vortexItems && vortexItems.length > 0) {
+      contextPrompt = `\n\nHere are the user's knowledge base items for context:\n${vortexItems.map((item: any) => 
         `- Title: ${item.title}\n  Type: ${item.type}\n  Source: ${item.source}\n  ${item.pitch ? `Summary: ${item.pitch}` : ''}\n  ${item.keywords?.length ? `Keywords: ${item.keywords.join(', ')}` : ''}`
       ).join('\n\n')}`;
     }
 
-    const systemPrompt = `You are Cortex AI, an intelligent assistant that helps users interact with their personal knowledge base (their "second brain"). 
+    const systemPrompt = `You are Vortex AI, an intelligent assistant that helps users interact with their personal knowledge base (their "second brain"). 
 You help users:
 - Find and recall information from their saved items
 - Make connections between different pieces of knowledge

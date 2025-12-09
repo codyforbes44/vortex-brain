@@ -108,7 +108,7 @@ const AuthPage = () => {
               <Brain className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to Cortex</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Vortex</CardTitle>
           <CardDescription>Your AI-powered second brain</CardDescription>
         </CardHeader>
         <CardContent>
