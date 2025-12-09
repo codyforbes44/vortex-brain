@@ -6,7 +6,7 @@ import TableView from './views/TableView';
 import GridView from './views/GridView';
 import ListView from './views/ListView';
 import KanbanView from './views/KanbanView';
-import { useCortexItems, useCreateCortexItem, useDeleteCortexItem, CortexItem } from '@/hooks/useCortexItems';
+import { useVortexItems, useCreateVortexItem, useDeleteVortexItem, VortexItem } from '@/hooks/useVortexItems';
 import { 
   Dialog, 
   DialogContent, 
@@ -26,18 +26,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
-interface CortexTableProps {
+interface VortexTableProps {
   viewType?: 'table' | 'grid' | 'list' | 'kanban';
   categoryId?: string;
-  cortexId?: string | null;
+  vortexId?: string | null;
 }
 
-const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'overview' }: CortexTableProps) => {
+const VortexTable = ({ viewType = 'table', categoryId = 'private', vortexId = 'overview' }: VortexTableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [targetCortex, setTargetCortex] = useState<string>('');
+  const [targetVortex, setTargetVortex] = useState<string>('');
   const [newItem, setNewItem] = useState({
     title: '',
     url: '',
@@ -48,11 +48,11 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
     writer: ''
   });
 
-  const { data: cortexItems = [], isLoading, error } = useCortexItems();
-  const createMutation = useCreateCortexItem();
-  const deleteMutation = useDeleteCortexItem();
+  const { data: vortexItems = [], isLoading, error } = useVortexItems();
+  const createMutation = useCreateVortexItem();
+  const deleteMutation = useDeleteVortexItem();
   
-  const getActiveCortexName = () => {
+  const getActiveVortexName = () => {
     const categories = [
       {
         id: 'shared',
@@ -81,48 +81,48 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
       }
     ];
     
-    if (cortexId === null) {
+    if (vortexId === null) {
       return "All";
     }
     
     const category = categories.find(c => c.id === categoryId);
     if (!category) return "Unknown";
     
-    const item = category.items.find(i => i.id === cortexId);
+    const item = category.items.find(i => i.id === vortexId);
     return item ? item.name : "Unknown";
   };
   
   const getFilteredItems = () => {
-    const activeCortexName = getActiveCortexName().toLowerCase();
+    const activeVortexName = getActiveVortexName().toLowerCase();
     
-    if (cortexId === 'overview') {
+    if (vortexId === 'overview') {
       return searchQuery 
-        ? cortexItems.filter(item => 
+        ? vortexItems.filter(item => 
             item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (item.writer?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
           )
-        : cortexItems;
+        : vortexItems;
     }
     
-    let cortexFiltered = cortexItems.filter(item => 
-      item.keywords.some(keyword => keyword.toLowerCase() === activeCortexName.toLowerCase())
+    let vortexFiltered = vortexItems.filter(item => 
+      item.keywords.some(keyword => keyword.toLowerCase() === activeVortexName.toLowerCase())
     );
     
-    if (cortexFiltered.length === 0) {
-      cortexFiltered = cortexItems.filter(item => 
-        item.keywords.some(keyword => keyword.toLowerCase().includes(activeCortexName.toLowerCase())) ||
-        item.title.toLowerCase().includes(activeCortexName.toLowerCase())
+    if (vortexFiltered.length === 0) {
+      vortexFiltered = vortexItems.filter(item => 
+        item.keywords.some(keyword => keyword.toLowerCase().includes(activeVortexName.toLowerCase())) ||
+        item.title.toLowerCase().includes(activeVortexName.toLowerCase())
       );
     }
     
     return searchQuery 
-      ? cortexFiltered.filter(item => 
+      ? vortexFiltered.filter(item => 
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase())) ||
           (item.writer?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
         )
-      : cortexFiltered;
+      : vortexFiltered;
   };
   
   const filteredItems = getFilteredItems();
@@ -138,12 +138,12 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
   };
 
   const handleMoveItems = () => {
-    if (!targetCortex) return;
+    if (!targetVortex) return;
     
-    toast.success(`Moved ${selectedItems.length} items to ${targetCortex}`);
+    toast.success(`Moved ${selectedItems.length} items to ${targetVortex}`);
     setSelectedItems([]);
     setMoveDialogOpen(false);
-    setTargetCortex('');
+    setTargetVortex('');
   };
 
   const handleDeleteSelected = async () => {
@@ -174,7 +174,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
     setCreateDialogOpen(false);
   };
 
-  const cortexOptions = [
+  const vortexOptions = [
     { id: 'shared-1', name: 'Second Brain' },
     { id: 'shared-2', name: 'OSS' },
     { id: 'shared-3', name: 'Artificial Intelligence' },
@@ -200,7 +200,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
         <div className="relative w-80">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
-            placeholder="Search cortexes..." 
+            placeholder="Search vortexes..." 
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -225,7 +225,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
           </Button>
           <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
             <Plus size={16} className="mr-2" />
-            New Cortex
+            New Vortex
           </Button>
         </div>
       </div>
@@ -239,7 +239,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <p>No cortex items found for this section.</p>
+            <p>No vortex items found for this section.</p>
           </div>
         ) : (
           <>
@@ -273,15 +273,15 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Move to Cortex</DialogTitle>
+            <DialogTitle>Move to Vortex</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <Select onValueChange={setTargetCortex} value={targetCortex}>
+            <Select onValueChange={setTargetVortex} value={targetVortex}>
               <SelectTrigger>
-                <SelectValue placeholder="Select target cortex" />
+                <SelectValue placeholder="Select target vortex" />
               </SelectTrigger>
               <SelectContent>
-                {cortexOptions.map(option => (
+                {vortexOptions.map(option => (
                   <SelectItem key={option.id} value={option.id}>
                     {option.name}
                   </SelectItem>
@@ -293,7 +293,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
             <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleMoveItems} disabled={!targetCortex}>
+            <Button onClick={handleMoveItems} disabled={!targetVortex}>
               Move Items
             </Button>
           </DialogFooter>
@@ -304,7 +304,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create New Cortex Item</DialogTitle>
+            <DialogTitle>Create New Vortex Item</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -322,7 +322,7 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
                 id="url"
                 value={newItem.url}
                 onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
-                placeholder="/cortex/..."
+                placeholder="/vortex/..."
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -393,4 +393,4 @@ const CortexTable = ({ viewType = 'table', categoryId = 'private', cortexId = 'o
   );
 };
 
-export default CortexTable;
+export default VortexTable;

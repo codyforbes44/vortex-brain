@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { CortexItem } from '@/hooks/useCortexItems';
+import { VortexItem } from '@/hooks/useVortexItems';
 import { Check, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface GridViewProps {
-  items: CortexItem[];
+  items: VortexItem[];
   selectedItems?: string[];
   onSelectItem?: (id: string) => void;
 }

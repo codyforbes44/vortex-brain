@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type CortexItemStatus = 'to_read' | 'in_progress' | 'completed';
+export type VortexItemStatus = 'to_read' | 'in_progress' | 'completed';
 
-export type CortexItem = {
+export type VortexItem = {
   id: string;
   title: string;
   url: string;
@@ -18,57 +18,57 @@ export type CortexItem = {
   user_id: string | null;
   created_at: string;
   updated_at: string;
-  status: CortexItemStatus;
+  status: VortexItemStatus;
 };
 
-export type CortexItemInsert = Omit<CortexItem, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'status'> & { status?: CortexItemStatus };
-export type CortexItemUpdate = Partial<CortexItemInsert & { status: CortexItemStatus }>;
+export type VortexItemInsert = Omit<VortexItem, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'status'> & { status?: VortexItemStatus };
+export type VortexItemUpdate = Partial<VortexItemInsert & { status: VortexItemStatus }>;
 
-export const useCortexItems = () => {
+export const useVortexItems = () => {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['cortex-items', user?.id],
+    queryKey: ['vortex-items', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('cortex_items')
+        .from('vortex_items')
         .select('*')
         .order('created_date', { ascending: false });
 
       if (error) {
-        console.error('Error fetching cortex items:', error);
+        console.error('Error fetching vortex items:', error);
         throw error;
       }
 
-      return data as CortexItem[];
+      return data as VortexItem[];
     },
     enabled: !!user,
   });
 };
 
-export const useCreateCortexItem = () => {
+export const useCreateVortexItem = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (item: CortexItemInsert) => {
+    mutationFn: async (item: VortexItemInsert) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
-        .from('cortex_items')
+        .from('vortex_items')
         .insert({ ...item, user_id: user.id })
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating cortex item:', error);
+        console.error('Error creating vortex item:', error);
         throw error;
       }
 
-      return data as CortexItem;
+      return data as VortexItem;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cortex-items'] });
+      queryClient.invalidateQueries({ queryKey: ['vortex-items'] });
       toast.success('Item created successfully');
     },
     onError: (error) => {
@@ -77,27 +77,27 @@ export const useCreateCortexItem = () => {
   });
 };
 
-export const useUpdateCortexItem = () => {
+export const useUpdateVortexItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: CortexItemUpdate }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: VortexItemUpdate }) => {
       const { data, error } = await supabase
-        .from('cortex_items')
+        .from('vortex_items')
         .update(updates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) {
-        console.error('Error updating cortex item:', error);
+        console.error('Error updating vortex item:', error);
         throw error;
       }
 
-      return data as CortexItem;
+      return data as VortexItem;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cortex-items'] });
+      queryClient.invalidateQueries({ queryKey: ['vortex-items'] });
       toast.success('Item updated successfully');
     },
     onError: (error) => {
@@ -106,25 +106,25 @@ export const useUpdateCortexItem = () => {
   });
 };
 
-export const useDeleteCortexItem = () => {
+export const useDeleteVortexItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('cortex_items')
+        .from('vortex_items')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error deleting cortex item:', error);
+        console.error('Error deleting vortex item:', error);
         throw error;
       }
 
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cortex-items'] });
+      queryClient.invalidateQueries({ queryKey: ['vortex-items'] });
       toast.success('Item deleted successfully');
     },
     onError: (error) => {

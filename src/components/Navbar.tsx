@@ -130,7 +130,7 @@ export const Navbar = () => {
     navigate('/');
   };
 
-  const cortexSubmenu = [
+  const vortexSubmenu = [
     { to: '/', icon: <Info size={18} />, label: 'What', id: 'what' },
     { to: '/why', icon: <HelpCircle size={18} />, label: 'Why', id: 'why' },
     { to: '/how', icon: <Code size={18} />, label: 'How', id: 'how' },
@@ -148,16 +148,16 @@ export const Navbar = () => {
     <TooltipProvider>
       <header className="glass-panel fixed top-6 left-1/2 transform -translate-x-1/2 z-40 rounded-lg px-1 py-1">
         <nav className="flex items-center">
-          {/* Cortex with submenu */}
+          {/* Vortex with submenu */}
           <NavItem
             to="#"
             icon={<Brain size={20} />}
-            label="Cortex"
+            label="Vortex"
             active={['what', 'why', 'how'].includes(active)}
             onClick={() => {}}
             hasSubmenu={true}
           >
-            {cortexSubmenu.map((item) => (
+            {vortexSubmenu.map((item) => (
               <SubMenuItem
                 key={item.id}
                 to={item.to}
